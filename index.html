@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css"><link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
+       <style>
+            html, body {
+                font-family: Arial, Helvetica, sans-serif;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                margin: 0;
+                background: #fbffcf;
+            }
+
+            #map {
+            width: 100%;
+            height: calc(100% - 120px);
+            padding: 0;
+            margin: 0;
+        }
+
+
+            .footer {
+                height: 30px;
+
+            }
+
+
+        </style>
+        <title>Почвенные очерки</title>
+    </head>
+    <body>
+
+        <div style="margin-left: 30px;line-height: 1; padding-bottom: 15px; font: bold  21px/0.8 Arial, sans-serif;">  <big>Цифровой архив почвенных очерков кафедры почвоведения ФГБОУ ВО Пермский ГАТУ
+            <a href="data.xlsx"><img src="button.png"height=50px; style="padding-top: 10px; padding-bottom: 0px; padding-left: 144px;"><a href="QGIS project.7z"><img src="button_qgis.png"height=50px; style="padding-top: 10px; padding-bottom: 0px; padding-left: 48px;"></a>
+            </div>
+
+        <div id="map">
+        </div>
+
+        <div class = "footer">
+            <div style="margin-left: 250px;line-height: 1; padding-bottom: 15px;">
+            <p>Интерактивная карта цифрового архива почвенных очерков разработана на кафедре почвоведения В.Ю. Гилёвым, О.А. Гилёвым, А.Н. Чащиным</p>
+
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script><script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="data/no_1.js"></script>
+        <script src="data/pa_2.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:20, minZoom:7
+        }).fitBounds([[56.43373640126761,51.838001599874865],[60.97034618057382,67.87827158208437]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://pgsha.ru/faculties/agrohim/cathedras/soil/nir/" target="_blank">на сайт ФГБОУ ВО Пермский ГАТУ</a> &middot;');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_kapOpenStreetMap_0');
+        map.getPane('pane_kapOpenStreetMap_0').style.zIndex = 400;
+        var layer_kapOpenStreetMap_0 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_kapOpenStreetMap_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 7,
+            maxZoom: 20,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        layer_kapOpenStreetMap_0;
+        map.addLayer(layer_kapOpenStreetMap_0);
+        function pop_no_1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Индекс почвы</th>\
+                        <td>' + (feature.properties['soil_map_M'] !== null ? autolinker.link(feature.properties['soil_map_M'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Название почвы</th>\
+                        <td>' + (feature.properties['soil_map_1'] !== null ? autolinker.link(feature.properties['soil_map_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Почвенная зона</th>\
+                        <td>' + (feature.properties['soil_map_2'] !== null ? autolinker.link(feature.properties['soil_map_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_no_1_0(feature) {
+            switch(String(feature.properties['Color'])) {
+                case '0':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(1,183,255,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '1':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(208,142,147,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '3':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(221,157,144,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '4':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(220,124,123,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '5':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(209,89,90,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '6':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(214,82,84,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '8':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(224,88,83,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '8':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(224,88,83,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '9':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(209,127,122,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '11':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(220,171,116,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '12':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(212,155,96,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '13':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(224,141,91,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '15':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(220,105,67,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '22':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(198,128,141,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '29':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(208,180,186,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '38':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(196,187,106,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '41':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(207,213,122,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '51':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(210,175,182,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '54':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(204,140,152,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '57':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(188,141,133,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '65':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(168,69,71,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '179':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(203,213,196,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '183':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(186,200,168,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '185':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(176,200,187,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '204':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(183,203,173,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '215':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(88,131,92,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '219':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(157,183,73,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '225':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(224,120,111,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '226':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(206,68,64,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '231':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,157,154,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '246':
+                    return {
+                pane: 'pane_no_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(186,168,140,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_no_1');
+        map.getPane('pane_no_1').style.zIndex = 401;
+        map.getPane('pane_no_1').style['mix-blend-mode'] = 'normal';
+        var layer_no_1 = new L.geoJson(json_no_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_no_1',
+            layerName: 'layer_no_1',
+            pane: 'pane_no_1',
+            onEachFeature: pop_no_1,
+            style: style_no_1_0,
+        });
+        bounds_group.addLayer(layer_no_1);
+        map.addLayer(layer_no_1);
+        function pop_pa_2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Название района</th>\
+                        <td>' + (feature.properties['REG_NAME'] !== null ? autolinker.link(feature.properties['REG_NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Скачать <br>почвенный очерк</th>\
+                        <td>' + (feature.properties['attach'] !== null ? autolinker.link(feature.properties['attach'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_pa_2_0() {
+            return {
+                pane: 'pane_pa_2',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 4.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_pa_2');
+        map.getPane('pane_pa_2').style.zIndex = 402;
+        map.getPane('pane_pa_2').style['mix-blend-mode'] = 'normal';
+        var layer_pa_2 = new L.geoJson(json_pa_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_pa_2',
+            layerName: 'layer_pa_2',
+            pane: 'pane_pa_2',
+            onEachFeature: pop_pa_2,
+            style: style_pa_2_0,
+        });
+        bounds_group.addLayer(layer_pa_2);
+        map.addLayer(layer_pa_2);
+            var title = new L.Control();
+            title.onAdd = function (map) {
+                this._div = L.DomUtil.create('div', 'info');
+                this.update();
+                return this._div;
+            };
+            title.update = function () {
+                this._div.innerHTML = '<h2>Набор слоёв</h2>';
+            };
+            title.addTo(map);
+        var baseMaps = {};
+        L.control.layers(baseMaps,{'<img src="legend/pa_2.png" /> paйоны': layer_pa_2,'noчвы<br /><table><tr><td style="text-align: center;"><img src="legend/no_1_Водныеобъекты0.png" /></td><td>Водные объекты</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Пг1.png" /></td><td>Пг</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_П12.png" /></td><td>П1</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_П23.png" /></td><td>П2</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_П34.png" /></td><td>П3</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_П45.png" /></td><td>П4</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_По1иг6.png" /></td><td>По1иг</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Поиг7.png" /></td><td>Поиг</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Ппг8.png" /></td><td>Ппг</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_П1д9.png" /></td><td>П1д</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_П2д10.png" /></td><td>П2д</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_П3д11.png" /></td><td>П3д</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Пдж12.png" /></td><td>Пдж</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Пог13.png" /></td><td>Пог</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Пгт14.png" /></td><td>Пгт</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Дк15.png" /></td><td>Дк</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Дг16.png" /></td><td>Дг</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_СЛс17.png" /></td><td>СЛс</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_СЛ18.png" /></td><td>СЛ</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_СЛт19.png" /></td><td>СЛт</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Чоп20.png" /></td><td>Чоп</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Тв21.png" /></td><td>Тв</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Тп22.png" /></td><td>Тп</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Тн23.png" /></td><td>Тн</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Ат24.png" /></td><td>Ат</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Ан25.png" /></td><td>Ан</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_А26.png" /></td><td>А</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Бриг27.png" /></td><td>Бриг</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Бргр28.png" /></td><td>Бргр</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_ПБ29.png" /></td><td>ПБ</td></tr><tr><td style="text-align: center;"><img src="legend/no_1_Глл30.png" /></td><td>Глл</td></tr></table>': layer_no_1,"kapта OpenStreetMap": layer_kapOpenStreetMap_0,},{collapsed:false}).addTo(map);
+        setBounds();
+        var i = 0;
+        layer_no_1.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['soil_map_M'] !== null?String('<div style="color: #000000; font-size: 8pt; font-family: \'MS Shell Dlg 2\', sans-serif;">' + layer.feature.properties['soil_map_M']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_no_1'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+        resetLabels([layer_no_1,layer_pa_2]);
+        map.on("zoomend", function(){
+            resetLabels([layer_no_1,layer_pa_2]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_no_1,layer_pa_2]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_no_1,layer_pa_2]);
+        });
+        </script>
+    </body>
+</html>
